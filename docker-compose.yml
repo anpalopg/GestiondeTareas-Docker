@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  # Servicio PHP + Apache
+  app:
+    build: .
+    container_name: gestion_tareas_app
+    ports:
+      - "8080:80"       # Mapea el puerto 8080 del host al 80 del contenedor
+    # Montamos el proyecto local solo si quieres que los cambios se vean en tiempo real
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      # Evita problemas de timezone (opcional)
+      TZ: "America/Bogota"
+
+  # Servicio MySQL
+  db:
+    image: mysql:8.0
+    container_name: gestion_tareas_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gestion_tareas
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3007:3306"     # Permite conectar desde el host al puerto 3007
+    volumes:
+      - db_data:/var/lib/mysql                           # Volumen persistente de la base de datos
+      - ./app/Docker/mysql-init/database:/docker-entrypoint-initdb.d  # Scripts de inicialización
+
+# Volúmenes persistentes
+volumes:
+  db_data:

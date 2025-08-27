@@ -1,8 +1,6 @@
 <?php
-if (!defined('ROOT_PATH')) {
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
-}
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/DbConfig.php');
+require_once __DIR__ . '/../config/dirs.php';
+require_once __DIR__ . '/../config/DbConfig.php';
 
 class EstadoModel {
     private $conn;
@@ -15,7 +13,6 @@ class EstadoModel {
     public function obtenerTodos() {
         $sql = "SELECT * FROM estados_tarea ORDER BY id";
         $result = $this->conn->query($sql);
-        
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
@@ -24,9 +21,7 @@ class EstadoModel {
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $nombre);
         $stmt->execute();
-        $result = $stmt->get_result();
-        
-        return $result->fetch_assoc();
+        return $stmt->get_result()->fetch_assoc();
     }
 
     public function obtenerPorId($id) {
@@ -34,14 +29,9 @@ class EstadoModel {
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        $result = $stmt->get_result();
-        
-        return $result->fetch_assoc();
+        return $stmt->get_result()->fetch_assoc();
     }
 
-    /**
-     * Obtiene los estados con el conteo de tareas en cada uno
-     */
     public function obtenerEstadosConConteo() {
         $query = "SELECT e.nombre as estado, COUNT(t.id) as conteo 
                   FROM estados_tarea e 

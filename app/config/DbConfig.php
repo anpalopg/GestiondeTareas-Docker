@@ -1,9 +1,6 @@
 <?php
 /**
- * Configuración de la base de datos
- * 
- * Este archivo contiene las constantes necesarias para la conexión
- * con la base de datos MySQL.
+ * Configuración de la base de datos para Docker
  */
 
 if (!defined('ROOT_PATH')) {
@@ -11,8 +8,16 @@ if (!defined('ROOT_PATH')) {
 }
 
 // Definir constantes de conexión
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');      // Usuario de la base de datos
-define('DB_PASS', '');          // Contraseña, por defecto vacía para XAMPP
-define('DB_NAME', 'gestion_tareas_escolares');
+if (!defined('DB_HOST')) {
+    define('DB_HOST', 'db'); // nombre del servicio MySQL en Docker
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', 'user'); // usuario definido en docker-compose
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', 'password'); // contraseña definida en docker-compose
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', 'gestion_tareas'); // nombre de la base de datos
+}
 ?>

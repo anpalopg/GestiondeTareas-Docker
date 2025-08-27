@@ -1,5 +1,6 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/EstadoModel.php');
+// Ruta relativa usando __DIR__ para compatibilidad Docker
+require_once __DIR__ . '/../models/EstadoModel.php';
 
 class EstadoController {
     private $estadoModel;

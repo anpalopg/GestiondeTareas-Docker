@@ -1,5 +1,11 @@
 <?php
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/Usuario.php');
+require_once(__DIR__ . '/../models/Usuario.php');
+
+
+
+
 
 class UsuarioController
 {

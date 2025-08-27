@@ -1,6 +1,7 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
-require_once(MODELS_PATH . '/Usuario.php');
+// Ajustar la ruta a dirs.php usando __DIR__ para mayor compatibilidad con Docker
+require_once __DIR__ . '/../config/dirs.php';
+require_once MODELS_PATH . '/Usuario.php';
 
 class AuthController {
     private $usuario;
@@ -20,7 +21,7 @@ class AuthController {
     public function login($email, $password) {
         try {
             $usuario = $this->usuario->getUserByEmail($email);
-            
+
             if (!$usuario) {
                 return ['success' => false, 'message' => 'Correo electrónico no encontrado'];
             }
@@ -29,7 +30,6 @@ class AuthController {
                 return ['success' => false, 'message' => 'Usuario inactivo'];
             }
 
-            // Comparamos las contraseñas sin hashear
             if ($password === $usuario['password']) {
                 $_SESSION['user_id'] = $usuario['id'];
                 $_SESSION['username'] = $usuario['username'];
@@ -37,7 +37,7 @@ class AuthController {
                 $_SESSION['email'] = $usuario['email'];
                 $_SESSION['rol'] = $usuario['rol_nombre'];
                 $_SESSION['rol_id'] = $usuario['rol_id'];
-                
+
                 return ['success' => true, 'rol' => $usuario['rol_nombre']];
             }
 
@@ -58,7 +58,6 @@ class AuthController {
             exit();
         } catch (Exception $e) {
             error_log("Error en logout: " . $e->getMessage());
-            // Redireccionar de todas formas para salir
             header('Location: ' . BASE_URL . '/app/views/auth/login.php');
             exit();
         }

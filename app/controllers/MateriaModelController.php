@@ -1,15 +1,34 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/MateriaModel.php');
+if (!defined('ROOT_PATH')) {
+    require_once(__DIR__ . '/../config/dirs.php'); // Ruta segura relativa
+}
+
+require_once(MODELS_PATH . '/MateriaModel.php');
 
 class MateriaModelController {
     private $materiaModel;
 
     public function __construct() {
-        $this->materiaModel = new MateriaModel();
+        try {
+            $this->materiaModel = new MateriaModel();
+        } catch (Exception $e) {
+            error_log("Error al inicializar MateriaModelController: " . $e->getMessage());
+            throw $e;
+        }
     }
 
-    public function obtenerMateriasEstudiante($estudiante_id) {
-        return $this->materiaModel->obtenerMateriasPorEstudiante($estudiante_id); // ✅ Nombre correcto
+    /**
+     * Obtiene materias asignadas a un estudiante específico
+     * @param int $estudiante_id
+     * @return array
+     */
+    public function obtenerMateriasEstudiante(int $estudiante_id): array {
+        try {
+            return $this->materiaModel->obtenerMateriasPorEstudiante($estudiante_id);
+        } catch (Exception $e) {
+            error_log("Error obteniendo materias del estudiante: " . $e->getMessage());
+            return [];
+        }
     }
 }
 ?>

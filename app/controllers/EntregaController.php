@@ -1,20 +1,33 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/EntregaModel.php');
+// Ajustamos la ruta usando __DIR__ para que funcione en Docker
+require_once __DIR__ . '/../models/EntregaModel.php';
 
 class EntregaController {
     private $entregaModel;
 
     public function __construct() {
         $this->entregaModel = new EntregaModel();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     public function subirTarea() {
         if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["archivo"])) {
-            session_start();
             $tareaId = $_POST["tarea_id"];
-            $estudianteId = $_SESSION["estudiante_id"];
-            
-            $directorioSubida = $_SERVER['DOCUMENT_ROOT'] . "/GestiondeTareas/uploads/";
+            $estudianteId = $_SESSION["estudiante_id"] ?? null;
+
+            if (!$estudianteId) {
+                echo json_encode(["status" => "error", "message" => "Usuario no identificado."]);
+                return;
+            }
+
+            // Ruta relativa dentro del proyecto
+            $directorioSubida = __DIR__ . '/../../uploads/';
+            if (!is_dir($directorioSubida)) {
+                mkdir($directorioSubida, 0777, true);
+            }
+
             $nombreArchivo = basename($_FILES["archivo"]["name"]);
             $rutaArchivo = $directorioSubida . $nombreArchivo;
 

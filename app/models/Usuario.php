@@ -1,5 +1,6 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/DbConfig.php');
+// Ruta relativa al archivo DbConfig.php desde models
+require_once __DIR__ . '/../config/DbConfig.php';
 
 class Usuario {
     private $conn;
@@ -7,6 +8,10 @@ class Usuario {
     public function __construct() {
         $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         $this->conn->set_charset("utf8mb4");
+
+        if ($this->conn->connect_error) {
+            die("Error de conexión: " . $this->conn->connect_error);
+        }
     }
 
     public function getRoles() {
@@ -36,9 +41,12 @@ class Usuario {
 
     public function actualizarUsuario($id, $datos) {
         try {
-            $stmt = $this->conn->prepare("SELECT id FROM usuarios WHERE (username = ? OR email = ?) AND id != ?");
+            $stmt = $this->conn->prepare(
+                "SELECT id FROM usuarios WHERE (username = ? OR email = ?) AND id != ?"
+            );
             $stmt->bind_param("ssi", $datos['username'], $datos['email'], $id);
             $stmt->execute();
+
             if ($stmt->get_result()->num_rows > 0) {
                 throw new Exception("El usuario o email ya existe");
             }
@@ -94,24 +102,29 @@ class Usuario {
             $stmt = $this->conn->prepare("SELECT id FROM usuarios WHERE username = ? OR email = ?");
             $stmt->bind_param("ss", $datos['username'], $datos['email']);
             $stmt->execute();
+
             if ($stmt->get_result()->num_rows > 0) {
                 throw new Exception("El usuario o email ya existe");
             }
 
+            // Insertar usuario con contraseña hasheada
             $stmt = $this->conn->prepare(
                 "INSERT INTO usuarios (username, password, email, nombre, apellidos, rol_id, activo) 
                  VALUES (?, ?, ?, ?, ?, ?, 1)"
             );
-            
-            $stmt->bind_param("sssssi", 
+
+            $hashedPassword = password_hash($datos['password'], PASSWORD_DEFAULT);
+
+            $stmt->bind_param(
+                "sssssi",
                 $datos['username'],
-                $datos['password'], // Ahora usamos la contraseña sin hashear
+                $hashedPassword,
                 $datos['email'],
                 $datos['nombre'],
                 $datos['apellidos'],
                 $datos['rol_id']
             );
-            
+
             return $stmt->execute();
         } catch (Exception $e) {
             error_log("Error creando usuario: " . $e->getMessage());
@@ -123,14 +136,13 @@ class Usuario {
         try {
             $stmt = $this->conn->prepare(
                 "SELECT u.*, r.nombre as rol_nombre 
-                FROM usuarios u 
-                LEFT JOIN roles r ON u.rol_id = r.id 
-                WHERE u.email = ?"
+                 FROM usuarios u 
+                 LEFT JOIN roles r ON u.rol_id = r.id 
+                 WHERE u.email = ?"
             );
             $stmt->bind_param("s", $email);
             $stmt->execute();
-            $result = $stmt->get_result();
-            return $result->fetch_assoc();
+            return $stmt->get_result()->fetch_assoc();
         } catch (Exception $e) {
             error_log("Error obteniendo usuario por email: " . $e->getMessage());
             return null;
@@ -141,14 +153,13 @@ class Usuario {
         try {
             $stmt = $this->conn->prepare(
                 "SELECT u.*, r.nombre as rol_nombre 
-                FROM usuarios u 
-                LEFT JOIN roles r ON u.rol_id = r.id 
-                WHERE u.id = ?"
+                 FROM usuarios u 
+                 LEFT JOIN roles r ON u.rol_id = r.id 
+                 WHERE u.id = ?"
             );
             $stmt->bind_param("i", $id);
             $stmt->execute();
-            $result = $stmt->get_result();
-            return $result->fetch_assoc();
+            return $stmt->get_result()->fetch_assoc();
         } catch (Exception $e) {
             error_log("Error obteniendo usuario por ID: " . $e->getMessage());
             return null;
